@@ -22,7 +22,8 @@ export default function TrendDetail({ params }: { params: Promise<{ tag: string 
       try {
         const res = await fetch('/api/trending');
         const data: Trend[] = await res.json();
-        const found = data.find(t => t.tag.toLowerCase() === `#${tag}`.toLowerCase());
+        // Check for tag match (api tags are like #TagName)
+        const found = data.find(t => t.tag.replace('#', '').toLowerCase() === tag.toLowerCase());
         
         if (found) {
           setTrend(found);
@@ -83,7 +84,7 @@ export default function TrendDetail({ params }: { params: Promise<{ tag: string 
             </Badge>
             <div className="bg-[#FEE2E2] text-[#DC2626] rounded-full px-2.5 py-0.5 flex items-center gap-1">
               <Flame className="h-3 w-3 fill-destructive text-destructive" />
-              <span className="text-[11px] font-black">{Math.floor(trend.heatScore / 10)}/10 HEAT</span>
+              <span className="text-[11px] font-black">{trend.heatScore}/10 HEAT</span>
             </div>
           </div>
           
@@ -91,9 +92,12 @@ export default function TrendDetail({ params }: { params: Promise<{ tag: string 
             {trend.tag}
           </h1>
           
-          <p className="text-base text-secondary-foreground font-medium leading-relaxed">
-            {trend.description}
-          </p>
+          <div className="p-4 bg-secondary/20 rounded-xl border border-border/50">
+            <p className="text-sm font-bold text-foreground mb-2">Summary:</p>
+            <p className="text-base text-secondary-foreground font-medium leading-relaxed">
+              आज <span className="text-destructive font-black">{trend.tag}</span> भारत में ट्रेंड कर रहा है। यह <span className="font-bold">{trend.description}</span> से जुड़ा हुआ है।
+            </p>
+          </div>
 
           <div className="flex items-center gap-6 pt-2">
             <div className="flex flex-col">
@@ -144,34 +148,6 @@ export default function TrendDetail({ params }: { params: Promise<{ tag: string 
                 {s}
               </Badge>
             ))}
-          </div>
-        </section>
-
-        {/* Post Block */}
-        <section className="space-y-4">
-          <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest border-b border-border pb-2">Top related content</h3>
-          <div className="bg-white border border-border rounded-2xl p-4 space-y-4 shadow-sm">
-             <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center font-black text-destructive text-xs">BT</div>
-                <div>
-                   <p className="text-sm font-black text-foreground">BharatTrends News</p>
-                   <p className="text-[10px] text-muted-foreground font-bold">@bharattrends • 2h ago</p>
-                </div>
-             </div>
-             <p className="text-[13px] text-secondary-foreground leading-relaxed">
-                आज {trend.tag} चर्चा का मुख्य विषय बना हुआ है। विभिन्न माध्यमों से मिल रही रिपोर्ट के अनुसार, लोग इस विषय पर अपनी गहरी प्रतिक्रियाएं दे रहे हैं।
-             </p>
-             <div className="aspect-video w-full bg-secondary rounded-xl overflow-hidden relative">
-                <img 
-                  src={`https://picsum.photos/seed/${trend.rank}/600/400`} 
-                  alt="Trend visualization" 
-                  className="object-cover w-full h-full opacity-80"
-                  data-ai-hint="India politics"
-                />
-                <div className="absolute inset-0 flex items-center justify-center">
-                   <p className="text-[9px] font-black text-white uppercase tracking-widest bg-destructive/80 px-3 py-1 rounded-full border border-white/20 backdrop-blur-sm">Live Media</p>
-                </div>
-             </div>
           </div>
         </section>
       </div>

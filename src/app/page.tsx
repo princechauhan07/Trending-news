@@ -47,7 +47,7 @@ export default function Home() {
         onLanguageToggle={() => setLanguage(l => l === 'en' ? 'hi' : 'en')} 
       />
 
-      <div className="px-4 py-4 space-y-4 bg-white border-b border-border">
+      <div className="px-4 py-4 space-y-4 bg-white border-b border-border shadow-sm">
         {/* Search Bar */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

@@ -1,111 +1,60 @@
 import { NextResponse } from 'next/server';
-import { Trend } from '@/lib/types';
+import { Trend, Category } from '@/lib/types';
 
-const mockTrends: Trend[] = [
-  {
-    rank: 1,
-    tag: "#FarmersProtest",
-    description: "किसानों द्वारा MSP कानून की मांग",
-    category: "policy",
-    heatScore: 95,
-    posts: "195K",
-    time: "2h",
-    source: ["social", "news"]
-  },
-  {
-    rank: 2,
-    tag: "#Elections2024",
-    description: "लोकसभा चुनाव की रणनीतियां",
-    category: "elections",
-    heatScore: 92,
-    posts: "458K",
-    time: "1h",
-    source: ["news", "social"]
-  },
-  {
-    rank: 3,
-    tag: "#CWC2023",
-    description: "भारतीय टीम का शानदार प्रदर्शन",
-    category: "sports",
-    heatScore: 88,
-    posts: "2.1M",
-    time: "3h",
-    source: ["social"]
-  },
-  {
-    rank: 4,
-    tag: "#Pathaan2",
-    description: "शाहरुख खान की अगली फिल्म की चर्चा",
-    category: "entertainment",
-    heatScore: 85,
-    posts: "110K",
-    time: "5h",
-    source: ["social"]
-  },
-  {
-    rank: 5,
-    tag: "#Budget2024",
-    description: "आम आदमी के लिए नए टैक्स नियम",
-    category: "policy",
-    heatScore: 82,
-    posts: "85K",
-    time: "6h",
-    source: ["news"]
-  },
-  {
-    rank: 6,
-    tag: "#IPLRetention",
-    description: "खिलाड़ियों की नीलामी की ताजा अपडेट",
-    category: "sports",
-    heatScore: 78,
-    posts: "320K",
-    time: "4h",
-    source: ["social", "news"]
-  },
-  {
-    rank: 7,
-    tag: "#UniformCivilCode",
-    description: "UCC पर देश भर में बहस जारी",
-    category: "policy",
-    heatScore: 75,
-    posts: "67K",
-    time: "8h",
-    source: ["news"]
-  },
-  {
-    rank: 8,
-    tag: "#RamMandir",
-    description: "अयोध्या में भक्तों का तांता",
-    category: "elections",
-    heatScore: 72,
-    posts: "1.5M",
-    time: "12h",
-    source: ["social"]
-  },
-  {
-    rank: 9,
-    tag: "#DelhiPollution",
-    description: "प्रदूषण के चलते स्कूलों में छुट्टी",
-    category: "policy",
-    heatScore: 68,
-    posts: "42K",
-    time: "10h",
-    source: ["news", "social"]
-  },
-  {
-    rank: 10,
-    tag: "#Stree3",
-    description: "हॉरर कॉमेडी यूनिवर्स का विस्तार",
-    category: "entertainment",
-    heatScore: 65,
-    posts: "28K",
-    time: "15h",
-    source: ["social"]
-  }
+const rawTrends = [
+  { hashtag: "पश्चिम_बंगाल_चुनाव", description: "West Bengal Assembly Elections 2026", category: "Politics", heat_score: 10 },
+  { hashtag: "भाजपा_रणनीति", description: "BJP Strategy Meeting Kolkata", category: "Politics", heat_score: 9 },
+  { hashtag: "चुनाव_आयोग_विवाद", description: "Election Commission Controversy", category: "Politics", heat_score: 9 },
+  { hashtag: "एलपीजी_मूल्य", description: "LPG Price Changes in India", category: "Economy", heat_score: 8 },
+  { hashtag: "आईपीएल_खेल", description: "IPL Cricket News 2026", category: "Sports", heat_score: 8 },
+  { hashtag: "छत्तीसगढ़_रेलवे", description: "Chhattisgarh Railway Station News", category: "Infrastructure", heat_score: 7 },
+  { hashtag: "ओडिशा_राजनीति", description: "Odisha Political Updates", category: "Politics", heat_score: 7 },
+  { hashtag: "शेयर_बाजार", description: "Stock Market Updates Today", category: "Finance", heat_score: 6 },
+  { hashtag: "डिजिटल_जनगणना", description: "Digital Census Announcement", category: "Government", heat_score: 6 },
+  { hashtag: "ईरान_संबंध", description: "International Relations with Iran", category: "International", heat_score: 5 }
 ];
 
+function generatePosts() {
+  const values = ["120K", "245K", "312K", "458K", "520K", "1.2M", "2.5M"];
+  return values[Math.floor(Math.random() * values.length)];
+}
+
+function generateTime() {
+  const hours = Math.floor(Math.random() * 24) + 1;
+  return `${hours}h`;
+}
+
+function generateSources() {
+  const all = ["social", "news", "search"];
+  const count = Math.floor(Math.random() * 2) + 1;
+  return all.sort(() => 0.5 - Math.random()).slice(0, count);
+}
+
 export async function GET() {
+  // Map raw data to the internal Trend interface
+  const trends: Trend[] = rawTrends.map((t, index) => {
+    // Clean hashtag: remove underscores and prepend #
+    const tag = `#${t.hashtag.replace(/_/g, '')}`;
+    
+    return {
+      rank: 0, // Will be set after sorting
+      tag,
+      description: t.description,
+      category: t.category.toLowerCase() as Category,
+      heatScore: t.heat_score,
+      posts: generatePosts(),
+      time: generateTime(),
+      source: generateSources(),
+    };
+  });
+
   // Sort by heatScore DESC
-  const sortedTrends = [...mockTrends].sort((a, b) => b.heatScore - a.heatScore);
+  const sortedTrends = [...trends].sort((a, b) => b.heatScore - a.heatScore);
+  
+  // Assign rank
+  sortedTrends.forEach((t, i) => t.rank = i + 1);
+
+  // Small randomization: shuffle order slightly for items with same heatScore
+  // or just return sorted by rank
   return NextResponse.json(sortedTrends);
 }

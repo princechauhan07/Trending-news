@@ -5,6 +5,7 @@ import { Trend, Language } from "@/lib/types";
 import { i18n } from "@/lib/translations";
 import { Badge } from "@/components/ui/badge";
 import { Flame } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface TrendCardProps {
   trend: Trend;
@@ -14,12 +15,20 @@ interface TrendCardProps {
 export function TrendCard({ trend, language }: TrendCardProps) {
   const t = i18n[language];
   const rankStr = trend.rank.toString().padStart(2, '0');
+  const isTopThree = trend.rank <= 3;
+  const isRising = trend.heatScore >= 9;
 
   return (
     <Link href={`/trend/${trend.tag.replace('#', '')}`}>
-      <div className="group relative bg-white hover:bg-secondary/30 active:bg-secondary/50 p-4 transition-all flex items-start gap-4 border-b border-border last:border-none">
+      <div className={cn(
+        "group relative bg-white hover:bg-secondary/30 active:bg-secondary/50 p-4 transition-all flex items-start gap-4 border-b border-border last:border-none",
+        isTopThree && "bg-gradient-to-r from-destructive/[0.02] to-transparent border-l-2 border-l-destructive"
+      )}>
         <div className="flex-shrink-0 w-6 pt-0.5">
-          <span className="text-sm font-headline font-black text-muted-foreground group-hover:text-foreground transition-colors">
+          <span className={cn(
+            "text-sm font-headline font-black transition-colors",
+            isTopThree ? "text-destructive" : "text-muted-foreground group-hover:text-foreground"
+          )}>
             {rankStr}
           </span>
         </div>
@@ -48,9 +57,9 @@ export function TrendCard({ trend, language }: TrendCardProps) {
         <div className="flex-shrink-0 flex flex-col items-end gap-1.5 pt-0.5">
           <div className="bg-[#FEE2E2] text-[#DC2626] rounded-full px-2 py-0.5 flex items-center gap-1">
             <Flame className="h-3 w-3 fill-destructive text-destructive" />
-            <span className="text-[10px] font-black">{Math.floor(trend.heatScore / 10)}/10</span>
+            <span className="text-[10px] font-black">{trend.heatScore}/10</span>
           </div>
-          {trend.heatScore > 85 && (
+          {isRising && (
             <span className="text-[9px] font-bold text-destructive uppercase tracking-tighter animate-pulse flex items-center gap-0.5">
               🔥 {t.rising}
             </span>

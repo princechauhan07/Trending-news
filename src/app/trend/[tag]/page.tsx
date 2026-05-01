@@ -2,20 +2,21 @@
 
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { Trend, Language } from '@/lib/types';
+import { Trend } from '@/lib/types';
 import { i18n } from '@/lib/translations';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, Flame, Share2, TrendingUp, Newspaper, Info, Languages } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatHashtag } from '@/lib/utils';
+import { useLanguage } from '@/context/language-context';
 
 export default function TrendDetail({ params }: { params: Promise<{ tag: string }> }) {
   const router = useRouter();
   const { tag: tagParam } = use(params);
   const tag = decodeURIComponent(tagParam);
+  const { language, toggleLanguage } = useLanguage();
   
-  const [language, setLanguage] = useState<Language>('hi');
   const [trend, setTrend] = useState<Trend | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -84,7 +85,7 @@ export default function TrendDetail({ params }: { params: Promise<{ tag: string 
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setLanguage(l => l === 'en' ? 'hi' : 'en')}
+            onClick={toggleLanguage}
             className="rounded-full text-foreground hover:bg-secondary"
           >
             <Languages className="h-4 w-4 text-destructive" />
@@ -114,7 +115,11 @@ export default function TrendDetail({ params }: { params: Promise<{ tag: string 
           <div className="p-5 bg-secondary/20 rounded-2xl border border-border/50 shadow-inner">
             <p className="text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-3">{t.summary}:</p>
             <p className="text-lg text-secondary-foreground font-semibold leading-relaxed">
-              आज <span className="text-destructive font-black underline decoration-destructive/20">{formattedHashtag}</span> भारत में ट्रेंड कर रहा है। यह <span className="text-foreground font-black">{trend.description_en}</span> से जुड़ा हुआ है।
+              {language === 'hi' ? (
+                <>आज <span className="text-destructive font-black underline decoration-destructive/20">{formattedHashtag}</span> भारत में ट्रेंड कर रहा है। यह <span className="text-foreground font-black">{trend.description_en}</span> से जुड़ा हुआ है।</>
+              ) : (
+                <>Today <span className="text-destructive font-black underline decoration-destructive/20">{formattedHashtag}</span> is trending in India. It is related to <span className="text-foreground font-black">{trend.description_en}</span>.</>
+              )}
             </p>
           </div>
 

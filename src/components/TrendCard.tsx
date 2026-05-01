@@ -1,19 +1,20 @@
 "use client"
 
 import { useRouter } from "next/navigation";
-import { Trend, Language } from "@/lib/types";
+import { Trend } from "@/lib/types";
 import { i18n } from "@/lib/translations";
 import { Badge } from "@/components/ui/badge";
 import { Flame } from "lucide-react";
 import { cn, formatHashtag } from "@/lib/utils";
+import { useLanguage } from "@/context/language-context";
 
 interface TrendCardProps {
   trend: Trend;
-  language: Language;
 }
 
-export function TrendCard({ trend, language }: TrendCardProps) {
+export function TrendCard({ trend }: TrendCardProps) {
   const router = useRouter();
+  const { language } = useLanguage();
   const t = i18n[language];
   
   const hashtag = language === 'hi' ? trend.hashtag_hi : trend.hashtag_en;

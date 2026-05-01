@@ -1,16 +1,17 @@
 "use client"
 
 import { useState, useEffect } from 'react';
-import { Trend, Language, CATEGORIES, Category } from '@/lib/types';
+import { Trend, CATEGORIES, Category } from '@/lib/types';
 import { i18n } from '@/lib/translations';
 import { TrendingHeader } from '@/components/TrendingHeader';
 import { TrendCard } from '@/components/TrendCard';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useLanguage } from '@/context/language-context';
 
 export default function Home() {
-  const [language, setLanguage] = useState<Language>('hi');
+  const { language } = useLanguage();
   const [trends, setTrends] = useState<Trend[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -48,10 +49,7 @@ export default function Home() {
   return (
     <main className="flex flex-col min-h-screen pb-10">
       <div className="sticky top-0 z-50 bg-white">
-        <TrendingHeader 
-          language={language} 
-          onLanguageToggle={() => setLanguage(l => l === 'en' ? 'hi' : 'en')} 
-        />
+        <TrendingHeader />
 
         <div className="px-4 py-4 space-y-4 border-b border-border shadow-sm">
           <div className="relative">
@@ -110,7 +108,7 @@ export default function Home() {
             ))
           ) : filteredTrends.length > 0 ? (
             filteredTrends.map((trend) => (
-              <TrendCard key={`${trend.rank}-${trend.hashtag_en}`} trend={trend} language={language} />
+              <TrendCard key={`${trend.rank}-${trend.hashtag_en}`} trend={trend} />
             ))
           ) : (
             <div className="p-20 text-center bg-white">

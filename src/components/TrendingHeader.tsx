@@ -1,16 +1,12 @@
 "use client"
 
-import { Language } from "@/lib/types";
+import { useLanguage } from "@/context/language-context";
 import { i18n } from "@/lib/translations";
 import { Button } from "@/components/ui/button";
 import { Languages } from "lucide-react";
 
-interface TrendingHeaderProps {
-  language: Language;
-  onLanguageToggle: () => void;
-}
-
-export function TrendingHeader({ language, onLanguageToggle }: TrendingHeaderProps) {
+export function TrendingHeader() {
+  const { language, toggleLanguage } = useLanguage();
   const t = i18n[language];
 
   return (
@@ -27,7 +23,7 @@ export function TrendingHeader({ language, onLanguageToggle }: TrendingHeaderPro
         <Button
           variant="secondary"
           size="sm"
-          onClick={onLanguageToggle}
+          onClick={toggleLanguage}
           className="rounded-full bg-secondary hover:bg-border/50 text-foreground border-none h-8 px-4 flex items-center gap-2 transition-all active:scale-95"
         >
           <Languages className="h-3.5 w-3.5 text-destructive" />

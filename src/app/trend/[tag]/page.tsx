@@ -2,16 +2,21 @@
 
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { Trend, Language, Category } from '@/lib/types';
+import { Trend, Language } from '@/lib/types';
+import { i18n } from '@/lib/translations';
 import { generateTrendSummary } from '@/ai/flows/generate-trend-summary-flow';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, Flame, Share2, TrendingUp, Newspaper, Info } from 'lucide-react';
+import { ChevronLeft, Flame, Share2, TrendingUp, Newspaper, Info, Languages } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatHashtag } from '@/lib/utils';
 
 export default function TrendDetail({ params }: { params: Promise<{ tag: string }> }) {
   const router = useRouter();
-  const { tag } = use(params);
+  const { tag: tagParam } = use(params);
+  const tag = decodeURIComponent(tagParam);
+  
+  const [language, setLanguage] = useState<Language>('hi');
   const [trend, setTrend] = useState<Trend | null>(null);
   const [summary, setSummary] = useState<string>('');
   const [loading, setLoading] = useState(true);
@@ -22,15 +27,18 @@ export default function TrendDetail({ params }: { params: Promise<{ tag: string 
       try {
         const res = await fetch('/api/trending');
         const data: Trend[] = await res.json();
-        // Check for tag match (api tags are like #TagName)
-        const found = data.find(t => t.tag.replace('#', '').toLowerCase() === tag.toLowerCase());
+        const found = data.find(t => 
+          t.hashtag_en.toLowerCase() === tag.toLowerCase() || 
+          t.hashtag_hi.toLowerCase() === tag.toLowerCase()
+        );
         
         if (found) {
           setTrend(found);
           setLoading(false);
           
-          // Generate AI Summary
-          const aiResult = await generateTrendSummary({ trendDescription: found.description });
+          const aiResult = await generateTrendSummary({ 
+            trendDescription: found.description_en 
+          });
           setSummary(aiResult.summary);
           setSummaryLoading(false);
         } else {
@@ -45,19 +53,23 @@ export default function TrendDetail({ params }: { params: Promise<{ tag: string 
 
   if (loading) {
     return (
-      <div className="p-4 space-y-6 bg-white min-h-screen">
-        <Skeleton className="h-10 w-10" />
+      <div className="p-4 space-y-6 bg-white min-h-screen max-w-md mx-auto">
+        <Skeleton className="h-10 w-10 rounded-full" />
         <Skeleton className="h-12 w-3/4" />
-        <Skeleton className="h-40 w-full" />
+        <Skeleton className="h-40 w-full rounded-2xl" />
       </div>
     );
   }
 
   if (!trend) return null;
 
+  const t = i18n[language];
+  const hashtag = language === 'hi' ? trend.hashtag_hi : trend.hashtag_en;
+  const description = language === 'hi' ? trend.description_hi : trend.description_en;
+  const formattedHashtag = formatHashtag(hashtag);
+
   return (
-    <main className="flex flex-col min-h-screen pb-10 bg-background">
-      {/* Sticky Top Bar */}
+    <main className="flex flex-col min-h-screen pb-10 bg-background max-w-md mx-auto">
       <div className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-border p-4 flex items-center justify-between">
         <Button 
           variant="ghost" 
@@ -68,15 +80,24 @@ export default function TrendDetail({ params }: { params: Promise<{ tag: string 
           <ChevronLeft className="h-6 w-6" />
         </Button>
         <div className="flex-grow text-center">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Trend Details</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{t.trendDetails}</span>
         </div>
-        <Button variant="ghost" size="icon" className="rounded-full text-foreground">
-          <Share2 className="h-5 w-5" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setLanguage(l => l === 'en' ? 'hi' : 'en')}
+            className="rounded-full text-foreground hover:bg-secondary"
+          >
+            <Languages className="h-4 w-4 text-destructive" />
+          </Button>
+          <Button variant="ghost" size="icon" className="rounded-full text-foreground hover:bg-secondary">
+            <Share2 className="h-5 w-5" />
+          </Button>
+        </div>
       </div>
 
-      <div className="p-6 space-y-8 bg-white">
-        {/* Hero Section */}
+      <div className="p-6 space-y-8 bg-white shadow-sm">
         <section className="space-y-4">
           <div className="flex items-center gap-2">
             <Badge className="bg-[#EEF2FF] text-[#4F46E5] border-none uppercase text-[10px] font-black tracking-widest h-5">
@@ -89,30 +110,33 @@ export default function TrendDetail({ params }: { params: Promise<{ tag: string 
           </div>
           
           <h1 className="text-3xl font-headline font-black text-foreground leading-tight">
-            {trend.tag}
+            {formattedHashtag}
           </h1>
           
           <div className="p-4 bg-secondary/20 rounded-xl border border-border/50">
-            <p className="text-sm font-bold text-foreground mb-2">Summary:</p>
+            <p className="text-sm font-bold text-foreground mb-2">{t.summary}:</p>
             <p className="text-base text-secondary-foreground font-medium leading-relaxed">
-              आज <span className="text-destructive font-black">{trend.tag}</span> भारत में ट्रेंड कर रहा है। यह <span className="font-bold">{trend.description}</span> से जुड़ा हुआ है।
+              {language === 'hi' ? (
+                <>आज <span className="text-destructive font-black">{formattedHashtag}</span> भारत में ट्रेंड कर रहा है। यह <span className="font-bold">{description}</span> से जुड़ा हुआ है।</>
+              ) : (
+                <>Today <span className="text-destructive font-black">{formattedHashtag}</span> is trending in India. It is related to <span className="font-bold">{description}</span>.</>
+              )}
             </p>
           </div>
 
           <div className="flex items-center gap-6 pt-2">
             <div className="flex flex-col">
               <span className="text-xl font-headline font-black text-destructive">{trend.posts}</span>
-              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Total Posts</span>
+              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{t.totalPosts}</span>
             </div>
             <div className="w-px h-8 bg-border"></div>
             <div className="flex flex-col">
               <span className="text-xl font-headline font-black text-foreground">{trend.time}</span>
-              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Trending For</span>
+              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{t.trendingFor}</span>
             </div>
           </div>
         </section>
 
-        {/* AI Insight Section */}
         <section className="bg-secondary/30 border border-border rounded-2xl p-6 relative overflow-hidden">
           <div className="absolute top-0 right-0 p-4">
             <TrendingUp className="h-10 w-10 text-destructive/10 -rotate-12" />
@@ -122,7 +146,7 @@ export default function TrendDetail({ params }: { params: Promise<{ tag: string 
             <div className="bg-destructive/10 p-1.5 rounded-lg">
               <Info className="h-4 w-4 text-destructive" />
             </div>
-            <h2 className="text-[10px] font-black uppercase tracking-widest text-foreground">AI Context (Hindi)</h2>
+            <h2 className="text-[10px] font-black uppercase tracking-widest text-foreground">{t.aiContext}</h2>
           </div>
 
           {summaryLoading ? (
@@ -138,9 +162,8 @@ export default function TrendDetail({ params }: { params: Promise<{ tag: string 
           )}
         </section>
 
-        {/* Meta Info */}
         <section className="space-y-4">
-          <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest border-b border-border pb-2">Sources tracked</h3>
+          <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest border-b border-border pb-2">{t.sourcesTracked}</h3>
           <div className="flex flex-wrap gap-2">
             {trend.source.map((s) => (
               <Badge key={s} variant="secondary" className="bg-secondary text-secondary-foreground capitalize flex gap-1.5 items-center px-3 py-1 text-[10px] font-bold">

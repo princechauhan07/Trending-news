@@ -4,8 +4,10 @@ export type Language = 'en' | 'hi';
 
 export interface Trend {
   rank: number;
-  tag: string;
-  description: string;
+  hashtag_hi: string;
+  hashtag_en: string;
+  description_hi: string;
+  description_en: string;
   category: Category;
   heatScore: number; // 0-10
   posts: string;
@@ -22,6 +24,13 @@ export interface Translations {
   posts: string;
   ago: string;
   rising: string;
+  trendDetails: string;
+  summary: string;
+  sourcesTracked: string;
+  totalPosts: string;
+  trendingFor: string;
+  aiContext: string;
+  noTrends: string;
 }
 
 export const CATEGORIES: { value: Category; label: { en: string; hi: string } }[] = [

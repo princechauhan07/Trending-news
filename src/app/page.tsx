@@ -34,8 +34,11 @@ export default function Home() {
   const t = i18n[language];
 
   const filteredTrends = trends.filter(trend => {
-    const matchesSearch = trend.tag.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          trend.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const q = searchQuery.toLowerCase();
+    const hashtag = language === 'hi' ? trend.hashtag_hi : trend.hashtag_en;
+    const desc = language === 'hi' ? trend.description_hi : trend.description_en;
+    
+    const matchesSearch = hashtag.toLowerCase().includes(q) || desc.toLowerCase().includes(q);
     const matchesCategory = activeCategory === 'all' || trend.category === activeCategory;
     return matchesSearch && matchesCategory;
   });
@@ -48,7 +51,6 @@ export default function Home() {
       />
 
       <div className="px-4 py-4 space-y-4 bg-white border-b border-border shadow-sm">
-        {/* Search Bar */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -59,7 +61,6 @@ export default function Home() {
           />
         </div>
 
-        {/* Category Filters */}
         <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
           {CATEGORIES.map((cat) => (
             <button
@@ -77,7 +78,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Trending List Section */}
       <div className="flex-grow">
         <div className="px-4 py-3 flex items-center justify-between border-b border-border bg-background/50">
           <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
@@ -85,7 +85,7 @@ export default function Home() {
           </h2>
           <div className="flex items-center gap-1.5">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
+              <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-destructive"></span>
             </span>
             <span className="text-[10px] font-black text-destructive uppercase tracking-widest">{t.live}</span>
@@ -105,11 +105,11 @@ export default function Home() {
             ))
           ) : filteredTrends.length > 0 ? (
             filteredTrends.map((trend) => (
-              <TrendCard key={trend.tag} trend={trend} language={language} />
+              <TrendCard key={trend.hashtag_en} trend={trend} language={language} />
             ))
           ) : (
             <div className="p-12 text-center text-muted-foreground bg-white">
-              <p className="text-sm font-medium">No trends found matching your search.</p>
+              <p className="text-sm font-medium">{t.noTrends}</p>
             </div>
           )}
         </div>

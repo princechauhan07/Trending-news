@@ -78,6 +78,6 @@ If given 4 more weeks, I would build:
 ---
 
 ## Links
-*   **Hosted Prototype**: [Insert URL Here]
-*   **GitHub Repo**: [Insert URL Here]
+*   **Hosted Prototype**: [https://trending-news-rose.vercel.app/]
+*   **GitHub Repo**: []
 *   **Loom Walkthrough**: [Insert URL Here]

@@ -25,7 +25,6 @@ export function TrendCard({ trend, language }: TrendCardProps) {
   const isRising = trend.heatScore >= 9;
 
   const handleCardClick = () => {
-    // Navigate using the English hashtag as the URL identifier
     router.push(`/trend/${encodeURIComponent(trend.hashtag_en.replace('#', ''))}`);
   };
 

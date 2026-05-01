@@ -7,7 +7,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatHashtag(tag: string) {
   if (!tag) return "";
-  // Ensure we remove spaces, underscores and prefix with #
+  // Remove spaces and underscores, then prefix with #
   const cleanTag = tag.replace(/[#_\s]/g, "");
   return "#" + cleanTag;
 }

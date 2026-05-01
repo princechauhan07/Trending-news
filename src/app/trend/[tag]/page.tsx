@@ -4,7 +4,6 @@ import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { Trend, Language } from '@/lib/types';
 import { i18n } from '@/lib/translations';
-import { generateTrendSummary } from '@/ai/flows/generate-trend-summary-flow';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, Flame, Share2, TrendingUp, Newspaper, Info, Languages } from 'lucide-react';
@@ -18,30 +17,22 @@ export default function TrendDetail({ params }: { params: Promise<{ tag: string 
   
   const [language, setLanguage] = useState<Language>('hi');
   const [trend, setTrend] = useState<Trend | null>(null);
-  const [summary, setSummary] = useState<string>('');
   const [loading, setLoading] = useState(true);
-  const [summaryLoading, setSummaryLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
       try {
         const res = await fetch('/api/trending');
         const data: Trend[] = await res.json();
-        // Match by cleaning hashes from stored data too
         const found = data.find(t => 
           t.hashtag_en.replace('#', '').toLowerCase() === tag.toLowerCase() || 
-          t.hashtag_hi.replace('#', '').toLowerCase() === tag.toLowerCase()
+          t.hashtag_hi.replace('#', '').toLowerCase() === tag.toLowerCase() ||
+          t.hashtag_hi.replaceAll('_', '').toLowerCase() === tag.toLowerCase()
         );
         
         if (found) {
           setTrend(found);
           setLoading(false);
-          
-          const aiResult = await generateTrendSummary({ 
-            trendDescription: found.description_en 
-          });
-          setSummary(aiResult.summary);
-          setSummaryLoading(false);
         } else {
           router.push('/');
         }
@@ -123,11 +114,7 @@ export default function TrendDetail({ params }: { params: Promise<{ tag: string 
           <div className="p-5 bg-secondary/20 rounded-2xl border border-border/50 shadow-inner">
             <p className="text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-3">{t.summary}:</p>
             <p className="text-lg text-secondary-foreground font-semibold leading-relaxed">
-              {language === 'hi' ? (
-                <>आज <span className="text-destructive font-black underline decoration-destructive/20">{formattedHashtag}</span> भारत में ट्रेंड कर रहा है। यह <span className="text-foreground font-black">{description}</span> से जुड़ा हुआ है।</>
-              ) : (
-                <>Today <span className="text-destructive font-black underline decoration-destructive/20">{formattedHashtag}</span> is trending in India. It is related to <span className="text-foreground font-black">{description}</span>.</>
-              )}
+              आज <span className="text-destructive font-black underline decoration-destructive/20">{formattedHashtag}</span> भारत में ट्रेंड कर रहा है। यह <span className="text-foreground font-black">{trend.description_en}</span> से जुड़ा हुआ है।
             </p>
           </div>
 
@@ -156,17 +143,9 @@ export default function TrendDetail({ params }: { params: Promise<{ tag: string 
             <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground">{t.aiContext}</h2>
           </div>
 
-          {summaryLoading ? (
-            <div className="space-y-3">
-              <Skeleton className="h-4 w-full rounded-md" />
-              <Skeleton className="h-4 w-full rounded-md" />
-              <Skeleton className="h-4 w-2/3 rounded-md" />
-            </div>
-          ) : (
-            <p className="text-base font-semibold text-foreground leading-relaxed">
-              {summary}
-            </p>
-          )}
+          <p className="text-base font-semibold text-foreground leading-relaxed">
+            {description}
+          </p>
         </section>
 
         <section className="space-y-4">

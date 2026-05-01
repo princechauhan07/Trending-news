@@ -1,48 +1,73 @@
 import { NextResponse } from 'next/server';
 import { Trend, Category } from '@/lib/types';
+import { enrichTrends } from '@/ai/flows/enrich-trends-flow';
 
-const rawTrends = [
-  { hashtag_hi: "पश्चिम_बंगाल_चुनाव", hashtag_en: "WestBengalElections", description_hi: "पश्चिम बंगाल चुनाव 2026", description_en: "West Bengal Assembly Elections 2026", category: "Politics", heat_score: 10 },
-  { hashtag_hi: "भाजपा_रणनीति", hashtag_en: "BJPStrategy", description_hi: "कोलकाता में भाजपा की रणनीति बैठक", description_en: "BJP Strategy Meeting Kolkata", category: "Politics", heat_score: 9 },
-  { hashtag_hi: "चुनाव_आयोग_विवाद", hashtag_en: "ECIControversy", description_hi: "चुनाव आयोग विवाद", description_en: "Election Commission Controversy", category: "Politics", heat_score: 9 },
-  { hashtag_hi: "एलपीजी_मूल्य", hashtag_en: "LPGPrice", description_hi: "भारत में एलपीजी की कीमतों में बदलाव", description_en: "LPG Price Changes in India", category: "Economy", heat_score: 8 },
-  { hashtag_hi: "आईपीएल_खेल", hashtag_en: "IPL2026", description_hi: "आईपीएल क्रिकेट समाचार 2026", description_en: "IPL Cricket News 2026", category: "Sports", heat_score: 8 },
-  { hashtag_hi: "छत्तीसगढ़_रेलवे", hashtag_en: "ChhattisgarhRailway", description_hi: "छत्तीसगढ़ रेलवे स्टेशन समाचार", description_en: "Chhattisgarh Railway Station News", category: "Infrastructure", heat_score: 7 },
-  { hashtag_hi: "ओडिशा_राजनीति", hashtag_en: "OdishaPolitics", description_hi: "ओडिशा राजनीतिक अपडेट", description_en: "Odisha Political Updates", category: "Politics", heat_score: 7 },
-  { hashtag_hi: "शेयर_बाजार", hashtag_en: "StockMarket", description_hi: "शेयर बाजार अपडेट आज", description_en: "Stock Market Updates Today", category: "Finance", heat_score: 6 },
-  { hashtag_hi: "डिजिटल_जनगणना", hashtag_en: "DigitalCensus", description_hi: "डिजिटल जनगणना की घोषणा", description_en: "Digital Census Announcement", category: "Government", heat_score: 6 },
-  { hashtag_hi: "ईरान_संबंध", hashtag_en: "IranRelations", description_hi: "ईरान के साथ अंतर्राष्ट्रीय संबंध", description_en: "International Relations with Iran", category: "International", heat_score: 5 }
+const GOOGLE_TRENDS_RSS = 'https://trends.google.com/trends/trendingsearches/daily/rss?geo=IN';
+
+// Fallback data in case of API failure
+const FALLBACK_TRENDS: Trend[] = [
+  { rank: 1, hashtag_hi: "#पश्चिमबंगालचुनाव", hashtag_en: "#WestBengalElections", description_hi: "पश्चिम बंगाल चुनाव 2026", description_en: "West Bengal Assembly Elections 2026", category: "politics", heatScore: 10, posts: "450K", time: "1h", source: ["news", "social"] },
+  { rank: 2, hashtag_hi: "#भाजपा", hashtag_en: "#BJPStrategy", description_hi: "भाजपा की रणनीति बैठक", description_en: "BJP Strategy Meeting Kolkata", category: "politics", heatScore: 9, posts: "320K", time: "2h", source: ["news"] },
+  { rank: 3, hashtag_hi: "#आईपीएल", hashtag_en: "#IPL2026", description_hi: "आईपीएल क्रिकेट समाचार", description_en: "IPL Cricket News 2026", category: "sports", heatScore: 8, posts: "1.2M", time: "4h", source: ["social", "search"] },
 ];
 
-function generatePosts() {
-  const values = ["120K", "245K", "312K", "458K", "520K", "1.2M", "2.5M"];
-  return values[Math.floor(Math.random() * values.length)];
+function calculateHeatScore(traffic: string): number {
+  const num = parseInt(traffic.replace(/[^0-9]/g, '')) || 0;
+  if (num >= 200000) return 10;
+  if (num >= 100000) return 9;
+  if (num >= 50000) return 8;
+  if (num >= 20000) return 7;
+  return 6;
 }
 
-function generateTime() {
-  const hours = Math.floor(Math.random() * 24) + 1;
-  return `${hours}h`;
-}
-
-function generateSources() {
-  const all = ["social", "news", "search"];
-  const count = Math.floor(Math.random() * 2) + 1;
-  return all.sort(() => 0.5 - Math.random()).slice(0, count);
+function generatePosts(traffic: string): string {
+  const base = parseInt(traffic.replace(/[^0-9]/g, '')) || 10000;
+  const randomFactor = 1 + (Math.random() * 0.5);
+  const val = Math.floor(base * randomFactor);
+  if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M';
+  if (val >= 1000) return Math.floor(val / 1000) + 'K';
+  return val.toString();
 }
 
 export async function GET() {
-  const trends: Trend[] = rawTrends.map((t) => ({
-    ...t,
-    rank: 0,
-    heatScore: t.heat_score,
-    posts: generatePosts(),
-    time: generateTime(),
-    source: generateSources(),
-    category: t.category.toLowerCase() as Category,
-  }));
+  try {
+    const res = await fetch(GOOGLE_TRENDS_RSS, { next: { revalidate: 300 } }); // Cache for 5 mins
+    const xml = await res.text();
 
-  const sortedTrends = [...trends].sort((a, b) => b.heatScore - a.heatScore);
-  sortedTrends.forEach((t, i) => t.rank = i + 1);
+    // Simple XML parsing using regex for Edge compatibility
+    const items = xml.match(/<item>([\s\S]*?)<\/item>/g) || [];
+    const rawTrends = items.slice(0, 10).map(item => {
+      const title = item.match(/<title>(.*?)<\/title>/)?.[1] || '';
+      const traffic = item.match(/<ht:approx_traffic>(.*?)<\/ht:approx_traffic>/)?.[1] || '10,000+';
+      return { title, traffic };
+    });
 
-  return NextResponse.json(sortedTrends);
+    if (rawTrends.length === 0) throw new Error('No trends found in RSS');
+
+    // Enrich using Genkit AI for bilingual support and categorization
+    const { enriched } = await enrichTrends({ rawTrends });
+
+    const finalTrends: Trend[] = enriched.map((item, index) => {
+      const raw = rawTrends[index];
+      const heatScore = calculateHeatScore(raw.traffic);
+      
+      return {
+        rank: index + 1,
+        hashtag_hi: item.hashtag_hi.startsWith('#') ? item.hashtag_hi : '#' + item.hashtag_hi,
+        hashtag_en: item.hashtag_en.startsWith('#') ? item.hashtag_en : '#' + item.hashtag_en,
+        description_hi: item.description_hi,
+        description_en: item.description_en,
+        category: item.category.toLowerCase() as Category,
+        heatScore,
+        posts: generatePosts(raw.traffic),
+        time: `${Math.floor(Math.random() * 5) + 1}h`,
+        source: ['google_trends', Math.random() > 0.5 ? 'news' : 'social'],
+      };
+    });
+
+    return NextResponse.json(finalTrends);
+  } catch (error) {
+    console.error('Real-time fetch failed, using fallback:', error);
+    return NextResponse.json(FALLBACK_TRENDS);
+  }
 }

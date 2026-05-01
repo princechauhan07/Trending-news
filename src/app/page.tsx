@@ -47,28 +47,28 @@ export default function Home() {
         onLanguageToggle={() => setLanguage(l => l === 'en' ? 'hi' : 'en')} 
       />
 
-      <div className="px-4 py-4 space-y-4">
+      <div className="px-4 py-4 space-y-4 bg-white border-b border-border">
         {/* Search Bar */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder={t.searchPlaceholder}
-            className="pl-10 bg-card/50 border-border rounded-xl h-12 text-sm focus:ring-accent"
+            className="pl-10 bg-secondary border-none rounded-xl h-11 text-sm focus:ring-destructive placeholder:text-muted-foreground text-foreground"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
 
         {/* Category Filters */}
-        <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
+        <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
           {CATEGORIES.map((cat) => (
             <button
               key={cat.value}
               onClick={() => setActiveCategory(cat.value)}
-              className={`flex-shrink-0 px-5 py-2 rounded-full text-xs font-bold transition-all border ${
+              className={`flex-shrink-0 px-5 py-2 rounded-full text-xs font-bold transition-all ${
                 activeCategory === cat.value
-                  ? 'bg-accent text-white border-accent shadow-[0_0_15px_rgba(160,106,255,0.4)]'
-                  : 'bg-card text-muted-foreground border-border hover:bg-muted'
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'bg-secondary text-secondary-foreground hover:bg-border/50'
               }`}
             >
               {cat.label[language]}
@@ -78,8 +78,8 @@ export default function Home() {
       </div>
 
       {/* Trending List Section */}
-      <div className="flex-grow bg-background">
-        <div className="px-4 py-2 flex items-center justify-between border-b border-border/50">
+      <div className="flex-grow">
+        <div className="px-4 py-3 flex items-center justify-between border-b border-border bg-background/50">
           <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
             {t.trendingNow}
           </h2>
@@ -88,18 +88,18 @@ export default function Home() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-destructive"></span>
             </span>
-            <span className="text-[9px] font-bold text-destructive uppercase tracking-widest">{t.live}</span>
+            <span className="text-[10px] font-black text-destructive uppercase tracking-widest">{t.live}</span>
           </div>
         </div>
 
-        <div className="divide-y divide-border/30">
+        <div className="divide-y divide-border">
           {loading ? (
             Array(8).fill(0).map((_, i) => (
-              <div key={i} className="p-4 flex gap-4 border-b border-border/50">
-                <Skeleton className="h-6 w-8 bg-muted" />
+              <div key={i} className="p-4 flex gap-4 bg-white">
+                <Skeleton className="h-6 w-8" />
                 <div className="flex-grow space-y-2">
-                  <Skeleton className="h-5 w-1/2 bg-muted" />
-                  <Skeleton className="h-4 w-full bg-muted" />
+                  <Skeleton className="h-5 w-1/2" />
+                  <Skeleton className="h-4 w-full" />
                 </div>
               </div>
             ))
@@ -108,7 +108,7 @@ export default function Home() {
               <TrendCard key={trend.tag} trend={trend} language={language} />
             ))
           ) : (
-            <div className="p-12 text-center text-muted-foreground">
+            <div className="p-12 text-center text-muted-foreground bg-white">
               <p className="text-sm font-medium">No trends found matching your search.</p>
             </div>
           )}

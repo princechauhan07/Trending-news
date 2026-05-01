@@ -4,26 +4,44 @@
 
 @layer base {
   :root {
-    --background: 240 10% 6%;
-    --foreground: 0 0% 100%;
-    --card: 240 10% 10%;
-    --card-foreground: 0 0% 100%;
-    --popover: 240 10% 6%;
-    --popover-foreground: 0 0% 100%;
-    --primary: 228 39% 33%;
+    /* Base Colors */
+    --background: 220 20% 98%; /* #F8F9FB */
+    --foreground: 221 39% 11%; /* #111827 */
+    
+    --card: 0 0% 100%; /* #FFFFFF */
+    --card-foreground: 221 39% 11%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 221 39% 11%;
+    
+    /* Primary (Used for active filters and headings) */
+    --primary: 221 39% 11%; /* #111827 */
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 5% 15%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 240 5% 15%;
-    --muted-foreground: 240 5% 65%;
-    --accent: 262 100% 71%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 100% 50%;
+    
+    /* Secondary (Used for search bar and inactive filters) */
+    --secondary: 210 20% 96%; /* #F3F4F6 */
+    --secondary-foreground: 217 19% 27%; /* #374151 */
+    
+    /* Muted */
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 14% 65%; /* #9CA3AF */
+    
+    /* Accent (Used for Category Badges) */
+    --accent: 243 75% 59%; /* #4F46E5 */
+    --accent-foreground: 231 100% 97%; /* #EEF2FF */
+    
+    /* Destructive (Used for Heat, LIVE, and Icons) */
+    --destructive: 0 84% 60%; /* #EF4444 */
     --destructive-foreground: 0 0% 100%;
-    --border: 240 5% 15%;
-    --input: 240 5% 15%;
-    --ring: 262 100% 71%;
-    --radius: 1rem;
+    
+    /* Heat Score Specifics */
+    --heat-bg: 0 93% 94%; /* #FEE2E2 */
+    --heat-text: 0 72% 51%; /* #DC2626 */
+    
+    --border: 220 13% 91%; /* #E6E8EC */
+    --input: 210 20% 96%;
+    --ring: 0 84% 60%;
+    --radius: 0.75rem;
   }
 }
 

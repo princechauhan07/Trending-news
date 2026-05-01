@@ -27,9 +27,10 @@ export default function TrendDetail({ params }: { params: Promise<{ tag: string 
       try {
         const res = await fetch('/api/trending');
         const data: Trend[] = await res.json();
+        // Match by cleaning hashes from stored data too
         const found = data.find(t => 
-          t.hashtag_en.toLowerCase() === tag.toLowerCase() || 
-          t.hashtag_hi.toLowerCase() === tag.toLowerCase()
+          t.hashtag_en.replace('#', '').toLowerCase() === tag.toLowerCase() || 
+          t.hashtag_hi.replace('#', '').toLowerCase() === tag.toLowerCase()
         );
         
         if (found) {
@@ -46,6 +47,7 @@ export default function TrendDetail({ params }: { params: Promise<{ tag: string 
         }
       } catch (e) {
         console.error(e);
+        router.push('/');
       }
     }
     fetchData();
@@ -53,10 +55,15 @@ export default function TrendDetail({ params }: { params: Promise<{ tag: string 
 
   if (loading) {
     return (
-      <div className="p-4 space-y-6 bg-white min-h-screen max-w-md mx-auto">
+      <div className="p-4 space-y-6 bg-white min-h-screen">
         <Skeleton className="h-10 w-10 rounded-full" />
-        <Skeleton className="h-12 w-3/4" />
+        <Skeleton className="h-12 w-3/4 rounded-lg" />
         <Skeleton className="h-40 w-full rounded-2xl" />
+        <div className="space-y-3">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-3/4" />
+        </div>
       </div>
     );
   }
@@ -69,13 +76,13 @@ export default function TrendDetail({ params }: { params: Promise<{ tag: string 
   const formattedHashtag = formatHashtag(hashtag);
 
   return (
-    <main className="flex flex-col min-h-screen pb-10 bg-background max-w-md mx-auto">
-      <div className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-border p-4 flex items-center justify-between">
+    <main className="flex flex-col min-h-screen pb-10 bg-background">
+      <div className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-border p-4 flex items-center justify-between shadow-sm">
         <Button 
           variant="ghost" 
           size="icon" 
           onClick={() => router.back()} 
-          className="rounded-full hover:bg-secondary text-foreground"
+          className="rounded-full hover:bg-secondary text-foreground active:scale-90 transition-transform"
         >
           <ChevronLeft className="h-6 w-6" />
         </Button>
@@ -97,78 +104,78 @@ export default function TrendDetail({ params }: { params: Promise<{ tag: string 
         </div>
       </div>
 
-      <div className="p-6 space-y-8 bg-white shadow-sm">
-        <section className="space-y-4">
+      <div className="p-6 space-y-8 bg-white">
+        <section className="space-y-5">
           <div className="flex items-center gap-2">
-            <Badge className="bg-[#EEF2FF] text-[#4F46E5] border-none uppercase text-[10px] font-black tracking-widest h-5">
+            <Badge className="bg-[#EEF2FF] text-[#4F46E5] border-none uppercase text-[10px] font-black tracking-widest h-6 px-3">
               {trend.category}
             </Badge>
-            <div className="bg-[#FEE2E2] text-[#DC2626] rounded-full px-2.5 py-0.5 flex items-center gap-1">
-              <Flame className="h-3 w-3 fill-destructive text-destructive" />
+            <div className="bg-[#FEE2E2] text-[#DC2626] rounded-full px-3 py-1 flex items-center gap-1.5 shadow-sm">
+              <Flame className="h-3.5 w-3.5 fill-destructive text-destructive" />
               <span className="text-[11px] font-black">{trend.heatScore}/10 HEAT</span>
             </div>
           </div>
           
-          <h1 className="text-3xl font-headline font-black text-foreground leading-tight">
+          <h1 className="text-3xl font-headline font-black text-foreground leading-tight tracking-tight">
             {formattedHashtag}
           </h1>
           
-          <div className="p-4 bg-secondary/20 rounded-xl border border-border/50">
-            <p className="text-sm font-bold text-foreground mb-2">{t.summary}:</p>
-            <p className="text-base text-secondary-foreground font-medium leading-relaxed">
+          <div className="p-5 bg-secondary/20 rounded-2xl border border-border/50 shadow-inner">
+            <p className="text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-3">{t.summary}:</p>
+            <p className="text-lg text-secondary-foreground font-semibold leading-relaxed">
               {language === 'hi' ? (
-                <>आज <span className="text-destructive font-black">{formattedHashtag}</span> भारत में ट्रेंड कर रहा है। यह <span className="font-bold">{description}</span> से जुड़ा हुआ है।</>
+                <>आज <span className="text-destructive font-black underline decoration-destructive/20">{formattedHashtag}</span> भारत में ट्रेंड कर रहा है। यह <span className="text-foreground font-black">{description}</span> से जुड़ा हुआ है।</>
               ) : (
-                <>Today <span className="text-destructive font-black">{formattedHashtag}</span> is trending in India. It is related to <span className="font-bold">{description}</span>.</>
+                <>Today <span className="text-destructive font-black underline decoration-destructive/20">{formattedHashtag}</span> is trending in India. It is related to <span className="text-foreground font-black">{description}</span>.</>
               )}
             </p>
           </div>
 
-          <div className="flex items-center gap-6 pt-2">
+          <div className="flex items-center gap-8 pt-2">
             <div className="flex flex-col">
-              <span className="text-xl font-headline font-black text-destructive">{trend.posts}</span>
-              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{t.totalPosts}</span>
+              <span className="text-2xl font-headline font-black text-destructive tabular-nums">{trend.posts}</span>
+              <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">{t.totalPosts}</span>
             </div>
-            <div className="w-px h-8 bg-border"></div>
+            <div className="w-px h-10 bg-border"></div>
             <div className="flex flex-col">
-              <span className="text-xl font-headline font-black text-foreground">{trend.time}</span>
-              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{t.trendingFor}</span>
+              <span className="text-2xl font-headline font-black text-foreground tabular-nums">{trend.time}</span>
+              <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">{t.trendingFor}</span>
             </div>
           </div>
         </section>
 
-        <section className="bg-secondary/30 border border-border rounded-2xl p-6 relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4">
-            <TrendingUp className="h-10 w-10 text-destructive/10 -rotate-12" />
+        <section className="bg-secondary/30 border border-border rounded-3xl p-6 relative overflow-hidden shadow-sm">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <TrendingUp className="h-16 w-16 text-destructive -rotate-12" />
           </div>
           
-          <div className="flex items-center gap-2 mb-4">
-            <div className="bg-destructive/10 p-1.5 rounded-lg">
+          <div className="flex items-center gap-2 mb-5">
+            <div className="bg-destructive/10 p-2 rounded-xl">
               <Info className="h-4 w-4 text-destructive" />
             </div>
-            <h2 className="text-[10px] font-black uppercase tracking-widest text-foreground">{t.aiContext}</h2>
+            <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground">{t.aiContext}</h2>
           </div>
 
           {summaryLoading ? (
             <div className="space-y-3">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-4 w-full rounded-md" />
+              <Skeleton className="h-4 w-full rounded-md" />
+              <Skeleton className="h-4 w-2/3 rounded-md" />
             </div>
           ) : (
-            <p className="text-base font-medium text-foreground leading-relaxed">
+            <p className="text-base font-semibold text-foreground leading-relaxed">
               {summary}
             </p>
           )}
         </section>
 
         <section className="space-y-4">
-          <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest border-b border-border pb-2">{t.sourcesTracked}</h3>
-          <div className="flex flex-wrap gap-2">
+          <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] border-b border-border pb-2">{t.sourcesTracked}</h3>
+          <div className="flex flex-wrap gap-2.5">
             {trend.source.map((s) => (
-              <Badge key={s} variant="secondary" className="bg-secondary text-secondary-foreground capitalize flex gap-1.5 items-center px-3 py-1 text-[10px] font-bold">
+              <Badge key={s} variant="secondary" className="bg-secondary text-secondary-foreground capitalize flex gap-2 items-center px-4 py-1.5 text-[10px] font-black shadow-sm border-none">
                 {s === 'news' ? <Newspaper className="h-3 w-3" /> : <Share2 className="h-3 w-3" />}
-                {s}
+                {s.replace('_', ' ')}
               </Badge>
             ))}
           </div>

@@ -7,7 +7,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatHashtag(tag: string) {
   if (!tag) return "";
-  // Ensure we don't double prefix # if it already exists
-  const cleanTag = tag.startsWith('#') ? tag.slice(1) : tag;
-  return "#" + cleanTag.replaceAll("_", "");
+  // Ensure we remove spaces, underscores and prefix with #
+  const cleanTag = tag.replace(/[#_\s]/g, "");
+  return "#" + cleanTag;
 }

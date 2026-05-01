@@ -4,7 +4,6 @@
 
 @layer base {
   :root {
-    /* Base Colors */
     --background: 220 20% 98%; /* #F8F9FB */
     --foreground: 221 39% 11%; /* #111827 */
     
@@ -14,27 +13,21 @@
     --popover: 0 0% 100%;
     --popover-foreground: 221 39% 11%;
     
-    /* Primary (Used for active filters and headings) */
     --primary: 221 39% 11%; /* #111827 */
     --primary-foreground: 0 0% 100%;
     
-    /* Secondary (Used for search bar and inactive filters) */
     --secondary: 210 20% 96%; /* #F3F4F6 */
     --secondary-foreground: 217 19% 27%; /* #374151 */
     
-    /* Muted */
     --muted: 210 20% 96%;
     --muted-foreground: 215 14% 65%; /* #9CA3AF */
     
-    /* Accent (Used for Category Badges) */
     --accent: 243 75% 59%; /* #4F46E5 */
     --accent-foreground: 231 100% 97%; /* #EEF2FF */
     
-    /* Destructive (Used for Heat, LIVE, and Icons) */
     --destructive: 0 84% 60%; /* #EF4444 */
     --destructive-foreground: 0 0% 100%;
     
-    /* Heat Score Specifics */
     --heat-bg: 0 93% 94%; /* #FEE2E2 */
     --heat-text: 0 72% 51%; /* #DC2626 */
     
